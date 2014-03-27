@@ -96,15 +96,16 @@ policy_attributes = {"ADH-AES128-GCM-SHA256": False,
                     "RC2-CBC-MD5": False,
                     "RC4-MD5": False,
                     "RC4-SHA": True,
-                    "SEED-SHA": False}
+                    "SEED-SHA": False,
+                    "Server-Defined-Cipher-Order": True}
 
-policy_name = 'Mozilla-Security-Assurance-Ciphersuite-Policy-v-1-2'
+policy_name = 'Mozilla-Security-Assurance-Ciphersuite-Policy-v-1-3'
 
 # Create the Ciphersuite Policy
 params = {'LoadBalancerName': load_balancer_name,
           'PolicyName': policy_name,
           'PolicyTypeName': 'SSLNegotiationPolicyType'}
-conn_elb.build_complex_list_params(params, 
+conn_elb.build_complex_list_params(params,
                                    [(x, policy_attributes[x]) for x in policy_attributes.keys()],
                                    'PolicyAttributes.member',
                                    ('AttributeName', 'AttributeValue'))
