@@ -1,24 +1,31 @@
 #!/usr/bin/env python
 
+# Added passing AWS policy to implement via referral - AWS Have their own
+# Policy Best Practices
+
 # Apply recommendation from https://wiki.mozilla.org/Security/Server_Side_TLS
 
 import boto.ec2.elb
 import sys
 
-if len(sys.argv) < 2:
-  print "usage : %s REGION ELB-NAME" % sys.argv[0]
+if len(sys.argv) < 2 or len(sys.argv) > 4:
+  print "usage : %s REGION ELB-NAME [REFERRED-POLICY]" % sys.argv[0]
   print ""
-  print "Example : %s us-west-2 persona-org-0810" % sys.argv[0]
+  print "Example : %s us-east-1 ANALYTICS-HTTPS [ELBSecurityPolicy-2014-01]" % sys.argv[0]
   sys.exit(1)
 
 region = sys.argv[1]
 load_balancer_name = sys.argv[2]
 conn_elb = boto.ec2.elb.connect_to_region(region)
-
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
-
-policy_attributes = {"ADH-AES128-GCM-SHA256": False,
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
+if sys.argv[3]:
+  referred_policy = sys.argv[3]
+  policy_name = 'Ciphersuite-' + referred_policy + '-v-1-0'
+  policy_attributes = {'Reference-Security-Policy':referred_policy}
+else:
+  policy_name = 'Mozilla-Security-Assurance-Ciphersuite-Policy-v-1-3'
+  policy_attributes = {"ADH-AES128-GCM-SHA256": False,
                     "ADH-AES256-GCM-SHA384": False,
                     "ADH-AES128-SHA": False,
                     "ADH-AES128-SHA256": False,
@@ -98,8 +105,6 @@ policy_attributes = {"ADH-AES128-GCM-SHA256": False,
                     "RC4-SHA": True,
                     "SEED-SHA": False,
                     "Server-Defined-Cipher-Order": True}
-
-policy_name = 'Mozilla-Security-Assurance-Ciphersuite-Policy-v-1-3'
 
 # Create the Ciphersuite Policy
 params = {'LoadBalancerName': load_balancer_name,
